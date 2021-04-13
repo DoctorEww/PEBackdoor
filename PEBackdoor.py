@@ -1,7 +1,29 @@
 import pefile
+import functools
 
+@functools.total_ordering
+class code_cave:
+    def __init__(self, location, size, section):
+        self.location = location
+        self.size = size
+        self.section = section
+        self.section_name = section.Name
+    
+    def __lt__(self, other):
+        return (self.size) < (other.size)
 
-def code_caves(pe, min_size, pe_path):
+    def __eq__(self, other):
+        return (self.size) == (other.size)
+
+    def print_cave(self):
+        print(f"Code cave at {hex(self.location)} of size {self.size} in {self.section_name.decode()}")
+
+def code_caves(min_size, pe_path):
+    """
+    This function takes in a pe file, a minimum codecave size, and the path to the pe file.
+
+    """
+    pe = pefile.PE(pe_path)
     print("Searching for code caves")
     caves = []
 
@@ -19,28 +41,30 @@ def code_caves(pe, min_size, pe_path):
                 cave_size += 1
             else:
                 if cave_size > min_size:
-                    raw_addr = section.PointerToRawData + pos - cave_size 
-                    print(f"Cave found at {raw_addr} of size {cave_size} in {section.Name.decode()}")
+                    cave_location = section.PointerToRawData + pos - cave_size 
+                    caves.append(code_cave(location=cave_location, size=cave_size, section=section))
+
                 cave_size = 0
             pos += 1
-            
+    caves.sort(reverse=True)
+    return caves
 
-        print(section.Name.decode())
-
-
-def testfunction():
+def interactive():
     pe_path = "../putty.exe"
 
     pe = pefile.PE(pe_path)
 
     original_start = pe.OPTIONAL_HEADER.AddressOfEntryPoint
     print(original_start)
+    pe.close()
     #pe.write("puddy.exe")
-    code_caves(pe, 150, pe_path)
+    caves = code_caves(150, pe_path)
+    print(caves)
+    caves[1].print_cave()
 
 
 
 
 if __name__ == "__main__":
-    testfunction()
+    interactive()
     print("done!")
