@@ -51,6 +51,9 @@ def code_caves(min_size, pe_path):
     caves.sort(reverse=True)
     return caves
 
+def insert_shellcode():
+    print("hi")
+
 def interactive():
 
     parser = argparse.ArgumentParser(description="Inject shell code into code caves automatically")
@@ -65,9 +68,9 @@ def interactive():
                         help="output file", type=str)
     args = parser.parse_args()
     
-    PEBackdoor(args.file_name, args.shell_code, args.output)    
+    PEBackdoor(args.file_name, args.shell_code, args.output, interactive = True)    
 
-def PEBackdoor(pe_path, shell_code, output):
+def PEBackdoor(pe_path, shell_code, output, interactive = False):
     print("main function called")
     pe = pefile.PE(pe_path)
     original_start = pe.OPTIONAL_HEADER.AddressOfEntryPoint
@@ -76,8 +79,5 @@ def PEBackdoor(pe_path, shell_code, output):
     caves = code_caves(150, pe_path)
     print(caves)
 
-
-
 if __name__ == "__main__":
     interactive()
-    print("done!")
