@@ -51,25 +51,8 @@ def code_caves(min_size, pe_path):
     caves.sort(reverse=True)
     return caves
 
-def interactive(pe_path):
-    #pe_path = "../putty.exe"
+def interactive():
 
-    pe = pefile.PE(pe_path)
-
-    original_start = pe.OPTIONAL_HEADER.AddressOfEntryPoint
-    print(original_start)
-    pe.close()
-    #pe.write("puddy.exe")
-    caves = code_caves(150, pe_path)
-    print(caves)
-
-def PEBackdoor():
-    print("main")
-
-
-
-if __name__ == "__main__":
-    
     parser = argparse.ArgumentParser(description="Inject shell code into code caves automatically")
 
     parser.add_argument("-f", "--file", dest="file_name", action="store", required=True,
@@ -81,5 +64,20 @@ if __name__ == "__main__":
     parser.add_argument("-o", "--out", dest="output", action="store", default="out.exe",
                         help="output file", type=str)
     args = parser.parse_args()
-    interactive(args.file_name)
+    
+    PEBackdoor(args.file_name, args.shell_code, args.output)    
+
+def PEBackdoor(pe_path, shell_code, output):
+    print("main function called")
+    pe = pefile.PE(pe_path)
+    original_start = pe.OPTIONAL_HEADER.AddressOfEntryPoint
+    print(original_start)
+    pe.close()
+    caves = code_caves(150, pe_path)
+    print(caves)
+
+
+
+if __name__ == "__main__":
+    interactive()
     print("done!")
