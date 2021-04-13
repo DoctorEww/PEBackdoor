@@ -1,5 +1,7 @@
+#!/usr/bin/python3
 import pefile
 import functools
+import argparse
 
 @functools.total_ordering
 class code_cave:
@@ -49,8 +51,8 @@ def code_caves(min_size, pe_path):
     caves.sort(reverse=True)
     return caves
 
-def interactive():
-    pe_path = "../putty.exe"
+def interactive(pe_path):
+    #pe_path = "../putty.exe"
 
     pe = pefile.PE(pe_path)
 
@@ -60,11 +62,24 @@ def interactive():
     #pe.write("puddy.exe")
     caves = code_caves(150, pe_path)
     print(caves)
-    caves[1].print_cave()
 
+def PEBackdoor():
+    print("main")
 
 
 
 if __name__ == "__main__":
-    interactive()
+    
+    parser = argparse.ArgumentParser(description="Inject shell code into code caves automatically")
+
+    parser.add_argument("-f", "--file", dest="file_name", action="store", required=True,
+                        help="PE file", type=str)
+
+    parser.add_argument("-s", "--shell", dest="shell_code", action="store", default=" ",
+                        help="shell code", type=str)
+
+    parser.add_argument("-o", "--out", dest="output", action="store", default="out.exe",
+                        help="output file", type=str)
+    args = parser.parse_args()
+    interactive(args.file_name)
     print("done!")
