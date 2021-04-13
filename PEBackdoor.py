@@ -50,7 +50,7 @@ def code_caves(min_size, pe_path):
             pos += 1
     caves.sort(reverse=True)
     return caves
-
+    
 def info(file_name):
     pe_path = file_name
     
@@ -87,7 +87,7 @@ def interactive():
     else:
         PEBackdoor(args.file_name, args.shell_code, args.output)    
 
-def PEBackdoor(pe_path, shell_code, output):
+def PEBackdoor(pe_path, shell_code, output, interactive = False):
     print("main function called")
     pe = pefile.PE(pe_path)
     original_start = pe.OPTIONAL_HEADER.AddressOfEntryPoint
@@ -97,8 +97,5 @@ def PEBackdoor(pe_path, shell_code, output):
     caves = code_caves(150, pe_path)
     print(caves)
 
-
-
 if __name__ == "__main__":
     interactive()
-    print("done!")
