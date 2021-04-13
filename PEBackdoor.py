@@ -51,6 +51,13 @@ def code_caves(min_size, pe_path):
     caves.sort(reverse=True)
     return caves
 
+def info(file_name):
+    pe_path = file_name
+    
+    pe = pefile.PE(pe_path)
+
+    print(pe.OPTIONAL_HEADER)
+
 def interactive():
 
     parser = argparse.ArgumentParser(description="Inject shell code into code caves automatically")
@@ -63,9 +70,15 @@ def interactive():
 
     parser.add_argument("-o", "--out", dest="output", action="store", default="out.exe",
                         help="output file", type=str)
+    
+    parser.add_argument("-i", "--info", dest="info", action="store_true",
+                        help="show info for pe")
     args = parser.parse_args()
     
-    PEBackdoor(args.file_name, args.shell_code, args.output)    
+    if args.info:
+        info(args.file_name)
+    else:
+        PEBackdoor(args.file_name, args.shell_code, args.output)    
 
 def PEBackdoor(pe_path, shell_code, output):
     print("main function called")
