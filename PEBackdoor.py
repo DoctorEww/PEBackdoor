@@ -1,4 +1,6 @@
+#!/usr/bin/python3
 import pefile
+import argparse
 
 
 def code_caves(pe, min_size, pe_path):
@@ -28,8 +30,8 @@ def code_caves(pe, min_size, pe_path):
         print(section.Name.decode())
 
 
-def testfunction():
-    pe_path = "../putty.exe"
+def testfunction(file_name):
+    pe_path = file_name
 
     pe = pefile.PE(pe_path)
 
@@ -42,5 +44,18 @@ def testfunction():
 
 
 if __name__ == "__main__":
-    testfunction()
+    
+    parser = argparse.ArgumentParser(description="Inject shell code into code caves automatically")
+
+    parser.add_argument("-f", "--file", dest="file_name", action="store", required=True,
+                        help="PE file", type=str)
+
+    parser.add_argument("-s", "--shell", dest="shell_code", action="store", default=" ",
+                        help="shell code", type=str)
+
+    parser.add_argument("-o", "--out", dest="output", action="store", default="out.exe",
+                        help="output file", type=str)
+    args = parser.parse_args()
+
+    testfunction(args.file_name)
     print("done!")
