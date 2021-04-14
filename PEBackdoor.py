@@ -50,7 +50,8 @@ def code_caves(min_size, pe_path):
             pos += 1
     caves.sort(reverse=True)
     return caves
-    
+
+#gives info about specified PE file
 def info(file_name):
     pe_path = file_name
     
@@ -58,8 +59,10 @@ def info(file_name):
 
     print(pe.OPTIONAL_HEADER)
 
+#injects just the last jump so far, will expand to 
+#create all shell code
 def append_jump(file_name, shell_code, output, start):
-    to_jmp = start.to_bytes(3, 'big')
+    to_jmp = (start - 4).to_bytes(3, 'little')
 
     shellcode = bytes(b"\xE9") + to_jmp
 
@@ -86,6 +89,8 @@ def interactive():
                         help="show info for pe")
     args = parser.parse_args()
     
+    #if info is set, only print optional header,
+    # else run the whole function
     if args.info:
         info(args.file_name)
     else:
