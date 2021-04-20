@@ -67,7 +67,7 @@ def info(file_name):
 def append_jump(file_name, shellcode, output, start):
     to_jmp = (start - 4).to_bytes(3, 'little')
 
-    shellcode = bytes(b"\xE9") + to_jmp
+    shellcode = bytes(b"\x90\x90\x90\x90\xE9") + to_jmp
 
     return shellcode
 
